@@ -220,6 +220,7 @@ func (p *Parser) parseUpsertClause() (_ *UpsertClause, err error) {
 		return &clause, p.errorExpected(p.pos, p.tok, "CONFLICT or DUPLICATE")
 	}
 	p.lex()
+
 	// Parse optional indexed column list & WHERE conditional.
 	if p.peek() == LP {
 		p.lex()
@@ -936,7 +937,6 @@ func (p *Parser) parseOperand() (expr Expr, err error) {
 	_, tok, lit := p.lex()
 	switch tok {
 	case VALUES:
-		// 左括号
 		_, tok, lit = p.lex()
 		var expr Expr
 		if tok == LP {
@@ -947,6 +947,8 @@ func (p *Parser) parseOperand() (expr Expr, err error) {
 				return nil, err
 			}
 			expr = expr.(*ParenExpr).X
+		} else {
+			return nil, p.errorExpected(p.pos, p.tok, "left paren")
 		}
 		return &Call{Name: &Ident{Name: "VALUES"}, Args: []Expr{expr}}, nil
 
